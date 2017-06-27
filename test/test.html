@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Monolith Unit Tests!</title>
+    <script src="../dist/monolith.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <button id="testClick">$.click Test</button>
+    <button id="testExtend">$.extend Test</button>
+    <script type="text/javascript">
+      (function(window) {
+        $.extend({
+          check: function() {
+            alert("Extension works!");
+          }
+        });
+
+        $("#testClick").click(function() {
+          alert("Click works!");
+        });
+
+        $("#testExtend").click(function() {
+          $.check();
+        });
+      })(window);
+    </script>
+  </body>
+</html>
