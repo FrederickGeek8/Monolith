@@ -3,11 +3,8 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
-      options: {
-        separator: ';'
-      },
       dist: {
-        src: ['src/core.js', 'src/**/*.js'],
+        src: ['src/prefix.js', 'src/core.js', 'src/**/*.js', 'src/suffix.js'],
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
@@ -22,7 +19,7 @@ module.exports = function(grunt) {
       }
     },
     jshint: {
-      files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
+      files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js', '!src/suffix.js', '!src/prefix.js'],
       options: {
         // options here to override JSHint defaults
         globals: {
@@ -35,7 +32,7 @@ module.exports = function(grunt) {
     },
     watch: {
       files: ['<%= jshint.files %>'],
-      tasks: ['jshint', 'qunit']
+      tasks: ['jshint', 'concat', 'uglify']
     }
   });
 
@@ -47,5 +44,6 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['jshint', 'qunit']);
 
   grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
+
 
 };

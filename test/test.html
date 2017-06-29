@@ -8,7 +8,11 @@
   <body>
     <button id="testClick">$.click Test</button>
     <button id="testExtend">$.extend Test</button>
+    <button id="testAjax">$.ajax Test</button>
     <script type="text/javascript">
+      $(document).ready(function() {
+        alert("Content loaded");
+      });
       (function(window) {
         $.extend({
           check: function() {
@@ -22,6 +26,17 @@
 
         $("#testExtend").click(function() {
           $.check();
+        });
+
+        $("#testAjax").click(function() {
+          $.ajax('ajax.txt', {
+            success: function(data) {
+              alert("Data: " + data);
+            },
+            error: function(err) {
+              alert("Error: " + err);
+            }
+          });
         });
       })(window);
     </script>
