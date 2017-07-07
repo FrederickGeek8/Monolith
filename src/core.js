@@ -15,6 +15,12 @@ var Monolith = (function() {
         return this;
       }
 
+      if ( selector.nodeType ) {
+  			this.context = this[0] = selector;
+  			this.length = 1;
+  			return this;
+  		}
+
       if (selector === "body" && document.body) {
         this.context = document;
         this[0] = document.body;
@@ -32,6 +38,11 @@ var Monolith = (function() {
         });
         return this;
       }
+
+      if (selector.selector !== undefined) {
+  			this.selector = selector.selector;
+  			this.context = selector.context;
+  		}
     },
     isReady: false,
     on: function() {
@@ -97,7 +108,7 @@ var Monolith = (function() {
     var functionality = arguments[0];
     if (typeof functionality === "object") {
       for (var key in functionality) {
-        this[key] = functionality[key];
+        Monolith.prototype[key] = this[key] = functionality[key];
       }
     }
     return this;

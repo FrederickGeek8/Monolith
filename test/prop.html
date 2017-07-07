@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Prop Test</title>
+    <script src="../dist/monolith.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <input id="check1" type="checkbox" checked="checked">
+    <label for="check1" >Check me</label>
+    <p></p>
+    <hr />
+    <span>Hello</span>
+    <div></div>
+    <div></div>
+    <div></div>
+    <script type="text/javascript">
+      $(document).ready(function(){
+        $("input").on("change", function(){
+          var $input = $( this );
+          $( "p" ).html( ".attr( 'checked' ): " + $input.attr( "checked" ) + "" +
+            ".prop( 'checked' ): " + $input.prop( "checked" ));
+        });
+        
+        $( "div" ).html( "<span style='color:red'>Hello <b>Again</b></span>" );
+      })
+
+    </script>
+  </body>
+</html>

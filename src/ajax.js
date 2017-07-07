@@ -2,7 +2,7 @@ Monolith.extend({
   ajaxDefaults: {
     type: 'GET',
     url: location.href,
-    context: this.context,
+    context: document,
     contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
   },
   ajax: function() {
@@ -34,10 +34,8 @@ Monolith.extend({
     var request = new XMLHttpRequest();
     request.open(settings.type, url, true);
 
-    console.log(settings);
 
     if (settings.type == 'GET') {
-      console.log(settings);
       request.onreadystatechange = function() {
         if (this.readyState === 4) {
           if (this.status >= 200 && this.status < 400) {
