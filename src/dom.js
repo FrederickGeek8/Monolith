@@ -4,10 +4,8 @@ $.each({
   prepend: 'afterbegin',
   append: 'beforeend'
 }, function(key, value) {
-  console.log(key);
   Monolith.fn[key] = function(elem) {
     var i;
-
     if (typeof elem === "string") {
       for (i = 0; i < this.length; i++) {
         this[i].insertAdjacentHTML(value, elem);
@@ -30,7 +28,6 @@ $.each({
   prependTo: 'prepend',
   appendTo: 'append'
 }, function(key, value) {
-  console.log(key);
   Monolith.fn[key] = function(elem) {
     Monolith(elem)[value](this);
 

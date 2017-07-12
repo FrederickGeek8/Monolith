@@ -206,8 +206,15 @@ Monolith.extend({
 
 Monolith.extend({
   each: function(obj, callback) {
-    for (var key in obj) {
-      if (obj.hasOwnProperty(key)) {
+    var key;
+    if (typeof obj === "object") {
+      for (key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          callback.call(obj[key], key, obj[key]);
+        }
+      }
+    } else {
+      for (key = 0; key < obj.length; key++) {
         callback.call(obj[key], key, obj[key]);
       }
     }
@@ -308,16 +315,34 @@ Monolith.extend({
   }
 });
 
+Monolith.extend({
+  curCSS: getComputedStyle || currentStyle,
+  css: function(prop, value) {
+    if (typeof value === "undefined") {
+      if (prop === "opacity") {
+        var currentVal = this.curCSS(this[0], prop);
+        return ((currentVal == "") ? 1 : currentVal);
+      } else {
+        return this.curCSS(this[0], prop);
+      }
+    } else {
+      for (var i = 0; i < this.length; i++) {
+        this[i].style[prop] = value;
+      }
+    }
+
+    return this;
+  }
+});
+
 $.each({
   before: 'beforebegin',
   after: 'afterend',
   prepend: 'afterbegin',
   append: 'beforeend'
 }, function(key, value) {
-  console.log(key);
   Monolith.fn[key] = function(elem) {
     var i;
-
     if (typeof elem === "string") {
       for (i = 0; i < this.length; i++) {
         this[i].insertAdjacentHTML(value, elem);
@@ -340,7 +365,6 @@ $.each({
   prependTo: 'prepend',
   appendTo: 'append'
 }, function(key, value) {
-  console.log(key);
   Monolith.fn[key] = function(elem) {
     Monolith(elem)[value](this);
 
