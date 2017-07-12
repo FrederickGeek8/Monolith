@@ -6,11 +6,20 @@
     <script src="../dist/monolith.js" charset="utf-8"></script>
   </head>
   <body>
-    <p id="test"><a>Things should be inserted before/after this paragraph.</a></p>
+    <p id="test"><a>Things should be inserted before/after this sentence.</a></p>
     <script type="text/javascript">
       $(document).ready(function() {
         $("#test").before("<p><b>$.before success</b></p>");
         $("<p><i>$.insertBefore success</i></p>").insertBefore("#test");
+
+        $("#test").after("<p><b>$.after success</b></p>");
+        $("<p><i>$.insertAfter success</i></p>").insertAfter("#test");
+
+        $("#test").prepend("<b style='color:red'> $.prepend success </b>");
+        $("<i style='color:red'> $.prependTo success </i>").prependTo("#test");
+
+        $("#test").append("<b style='color:blue'> $.append success </b>");
+        $("<i style='color:blue'> $.appendTo success </i>").appendTo("#test");
       });
     </script>
   </body>

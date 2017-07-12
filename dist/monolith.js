@@ -312,7 +312,7 @@ $.each({
   before: 'beforebegin',
   after: 'afterend',
   prepend: 'afterbegin',
-  append: 'afterend'
+  append: 'beforeend'
 }, function(key, value) {
   console.log(key);
   Monolith.fn[key] = function(elem) {
@@ -325,7 +325,7 @@ $.each({
     } else if (typeof elem.monolith === "string") {
       for (i = 0; i < this.length; i++) {
         for (var j = 0; j < elem.length; j++) {
-          this[i].insertAdjacentHTML(value, elem[j].outerHTML);
+          this[i].insertAdjacentElement(value, elem[j]);
         }
       }
     }
