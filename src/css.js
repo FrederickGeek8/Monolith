@@ -15,5 +15,11 @@ Monolith.extend({
     }
 
     return this;
+  },
+  width: function(val) {
+    this.css('width', val);
+  },
+  height: function(val) {
+    this.css('height', val);
   }
 });
