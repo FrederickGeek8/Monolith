@@ -53,10 +53,7 @@ Monolith.extend({
     request.send();
     request = null;
   },
-  getJSON: function() {
-    var url = arguments[0],
-    success = arguments[1];
-
+  getJSON: function(url, success) {
     Monolith.ajax({
 			type: "GET",
 			url: url,

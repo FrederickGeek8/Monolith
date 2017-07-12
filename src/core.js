@@ -5,7 +5,8 @@ var Monolith = (function() {
     },
     readyBound = false,
     readyList = [],
-    readyFired = false;
+    readyFired = false,
+    htmlRegex = /^<([a-z]+)([^<]+)*(?:>(.*)<\/([a-z]+)>|\s+\/>)$/;
 
   Monolith.fn = Monolith.prototype = {
     init: function(selector) {
@@ -15,11 +16,11 @@ var Monolith = (function() {
         return this;
       }
 
-      if ( selector.nodeType ) {
-  			this.context = this[0] = selector;
-  			this.length = 1;
-  			return this;
-  		}
+      if (selector.nodeType) {
+        this.context = this[0] = selector;
+        this.length = 1;
+        return this;
+      }
 
       if (selector === "body" && document.body) {
         this.context = document;
@@ -30,21 +31,39 @@ var Monolith = (function() {
       }
 
       if (typeof selector === "string") {
-        this.context = document;
-        var selected = document.querySelectorAll(selector);
-        this.length = selected.length;
-        selected.forEach(function(value, key) {
-          base[key] = value;
-        });
-        return this;
+        var htmlTest = htmlRegex.exec(selector);
+        if (htmlTest) {
+          var tempDiv = document.createElement("div");
+          tempDiv.innerHTML = selector;
+          var i = 0;
+          tempDiv.childNodes.forEach(function(value, key) {
+            if (value.nodeType === 1) {
+              base[i] = value.cloneNode(true);
+              i++;
+            }
+          });
+
+          this.context = document;
+          this.length = i;
+          return this;
+        } else {
+          this.context = document;
+          var selected = document.querySelectorAll(selector);
+          this.length = selected.length;
+          selected.forEach(function(value, key) {
+            base[key] = value;
+          });
+          return this;
+        }
       }
 
       if (selector.selector !== undefined) {
-  			this.selector = selector.selector;
-  			this.context = selector.context;
-  		}
+        this.selector = selector.selector;
+        this.context = selector.context;
+      }
     },
     isReady: false,
+    monolith: "0.0.1",
     on: function() {
       for (var el, i = 0; i < this.length; i++) {
         el = this[i];

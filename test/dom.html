@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>DOM Test</title>
+    <script src="../dist/monolith.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <p id="test"><a>Things should be inserted before/after this paragraph.</a></p>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $("#test").before("<p><b>$.before success</b></p>");
+        $("<p><i>$.insertBefore success</i></p>").insertBefore("#test");
+      });
+    </script>
+  </body>
+</html>

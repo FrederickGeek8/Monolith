@@ -7,7 +7,8 @@ var Monolith = (function() {
     },
     readyBound = false,
     readyList = [],
-    readyFired = false;
+    readyFired = false,
+    htmlRegex = /^<([a-z]+)([^<]+)*(?:>(.*)<\/([a-z]+)>|\s+\/>)$/;
 
   Monolith.fn = Monolith.prototype = {
     init: function(selector) {
@@ -17,11 +18,11 @@ var Monolith = (function() {
         return this;
       }
 
-      if ( selector.nodeType ) {
-  			this.context = this[0] = selector;
-  			this.length = 1;
-  			return this;
-  		}
+      if (selector.nodeType) {
+        this.context = this[0] = selector;
+        this.length = 1;
+        return this;
+      }
 
       if (selector === "body" && document.body) {
         this.context = document;
@@ -32,21 +33,39 @@ var Monolith = (function() {
       }
 
       if (typeof selector === "string") {
-        this.context = document;
-        var selected = document.querySelectorAll(selector);
-        this.length = selected.length;
-        selected.forEach(function(value, key) {
-          base[key] = value;
-        });
-        return this;
+        var htmlTest = htmlRegex.exec(selector);
+        if (htmlTest) {
+          var tempDiv = document.createElement("div");
+          tempDiv.innerHTML = selector;
+          var i = 0;
+          tempDiv.childNodes.forEach(function(value, key) {
+            if (value.nodeType === 1) {
+              base[i] = value.cloneNode(true);
+              i++;
+            }
+          });
+
+          this.context = document;
+          this.length = i;
+          return this;
+        } else {
+          this.context = document;
+          var selected = document.querySelectorAll(selector);
+          this.length = selected.length;
+          selected.forEach(function(value, key) {
+            base[key] = value;
+          });
+          return this;
+        }
       }
 
       if (selector.selector !== undefined) {
-  			this.selector = selector.selector;
-  			this.context = selector.context;
-  		}
+        this.selector = selector.selector;
+        this.context = selector.context;
+      }
     },
     isReady: false,
+    monolith: "0.0.1",
     on: function() {
       for (var el, i = 0; i < this.length; i++) {
         el = this[i];
@@ -174,10 +193,7 @@ Monolith.extend({
     request.send();
     request = null;
   },
-  getJSON: function() {
-    var url = arguments[0],
-    success = arguments[1];
-
+  getJSON: function(url, success) {
     Monolith.ajax({
 			type: "GET",
 			url: url,
@@ -185,6 +201,16 @@ Monolith.extend({
         success.call(this, JSON.parse(data));
       }
 		});
+  }
+});
+
+Monolith.extend({
+  each: function(obj, callback) {
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        callback.call(obj[key], key, obj[key]);
+      }
+    }
   }
 });
 
@@ -280,6 +306,46 @@ Monolith.extend({
       }
     }
   }
+});
+
+$.each({
+  before: 'beforebegin',
+  after: 'afterend',
+  prepend: 'afterbegin',
+  append: 'afterend'
+}, function(key, value) {
+  console.log(key);
+  Monolith.fn[key] = function(elem) {
+    var i;
+
+    if (typeof elem === "string") {
+      for (i = 0; i < this.length; i++) {
+        this[i].insertAdjacentHTML(value, elem);
+      }
+    } else if (typeof elem.monolith === "string") {
+      for (i = 0; i < this.length; i++) {
+        for (var j = 0; j < elem.length; j++) {
+          this[i].insertAdjacentHTML(value, elem[j].outerHTML);
+        }
+      }
+    }
+
+    return this;
+  };
+});
+
+$.each({
+  insertBefore: 'before',
+  insertAfter: 'after',
+  prependTo: 'prepend',
+  appendTo: 'append'
+}, function(key, value) {
+  console.log(key);
+  Monolith.fn[key] = function(elem) {
+    Monolith(elem)[value](this);
+
+    return this;
+  };
 });
 
 })(window);
