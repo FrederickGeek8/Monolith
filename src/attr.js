@@ -12,6 +12,37 @@ Monolith.extend({
 
     return this;
   },
+  data: function(elem, name, val) {
+    var i,
+      selector;
+    if (arguments.length === 3) {
+      selector = $(elem);
+      if (typeof val === "undefined") {
+        return JSON.parse(selector[0].getAttribute(name));
+      } else {
+        for (i = 0; i < this.length; i++) {
+          selector[0].setAttribute(name, JSON.stringify(val));
+        }
+      }
+    } else {
+      if (typeof elem.nodeType !== "undefined") {
+        selector = $(elem);
+        return JSON.parse(selector[0].getAttribute(name));
+      } else {
+        val = name;
+        name = elem;
+        if (typeof val === "undefined") {
+          JSON.parse(this[0].getAttribute(name));
+        } else {
+          for (i = 0; i < this.length; i++) {
+            this[i].setAttribute(name, JSON.stringify(val));
+          }
+        }
+      }
+    }
+
+    return this;
+  },
   prop: function() {
     var i;
     if (arguments.length == 2) {
@@ -84,7 +115,7 @@ Monolith.extend({
           arguments[0].call(this, i, this[i].innerHTML);
         }
       } else {
-        for(i = 0; i < this.length; i++) {
+        for (i = 0; i < this.length; i++) {
           this[i].innerHTML = arguments[0];
         }
       }

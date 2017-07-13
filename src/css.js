@@ -1,15 +1,26 @@
 Monolith.extend({
-  curCSS: getComputedStyle || currentStyle,
+  curCSS: function(arg) {
+    // to fix Illegal invocation
+    return window.getComputedStyle(arg) || window.currentStyle(arg);
+  },
   css: function(prop, value) {
-    if (typeof value === "undefined") {
+    var i;
+
+    if (typeof prop === "object" && typeof value === "undefined") {
+      for (var key in prop) {
+        for (i = 0; i < this.length; i++) {
+          this[i].style[key] = prop[key];
+        }
+      }
+    } else if (typeof value === "undefined") {
       if (prop === "opacity") {
-        var currentVal = this.curCSS(this[0], prop);
+        var currentVal = this.curCSS(this[0])[prop];
         return ((currentVal == "") ? 1 : currentVal);
       } else {
-        return this.curCSS(this[0], prop);
+        return this.curCSS(this[0])[prop];
       }
     } else {
-      for (var i = 0; i < this.length; i++) {
+      for (i = 0; i < this.length; i++) {
         this[i].style[prop] = value;
       }
     }
@@ -17,9 +28,19 @@ Monolith.extend({
     return this;
   },
   width: function(val) {
-    this.css('width', val);
+    if (typeof val === "undefined") {
+      if (this[0].offsetWidth !== 0) {
+        return this[0].offsetWidth;
+      }
+    } else if (typeof val === "number") {
+      return this.css('width', val + "px");
+    } else {
+      return this.css('width', val);
+    }
+
+
   },
   height: function(val) {
-    this.css('height', val);
+    return this.css('height', val);
   }
 });

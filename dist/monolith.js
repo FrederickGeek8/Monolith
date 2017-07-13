@@ -12,7 +12,8 @@ var Monolith = (function() {
 
   Monolith.fn = Monolith.prototype = {
     init: function(selector) {
-      var base = this;
+      var i,
+        key;
       // Handle undefined, null or empty selectors
       if (!selector) {
         return this;
@@ -37,24 +38,27 @@ var Monolith = (function() {
         if (htmlTest) {
           var tempDiv = document.createElement("div");
           tempDiv.innerHTML = selector;
-          var i = 0;
-          tempDiv.childNodes.forEach(function(value, key) {
-            if (value.nodeType === 1) {
-              base[i] = value.cloneNode(true);
+          i = 0;
+          for (key in tempDiv.childNodes) {
+            if (tempDiv.childNodes[key].nodeType === 1) {
+              this[i] = tempDiv.childNodes[key].cloneNode(true);
               i++;
             }
-          });
+          }
 
+          this.selector = selector;
           this.context = document;
           this.length = i;
           return this;
         } else {
           this.context = document;
           var selected = document.querySelectorAll(selector);
+          this.selector = selector;
           this.length = selected.length;
-          selected.forEach(function(value, key) {
-            base[key] = value;
-          });
+
+          for (key in selected) {
+            this[key] = selected[key];
+          }
           return this;
         }
       }
@@ -62,7 +66,14 @@ var Monolith = (function() {
       if (selector.selector !== undefined) {
         this.selector = selector.selector;
         this.context = selector.context;
+        this.length = selector.length;
+
+        for (i = 0; i < selector.length; i++) {
+          this[i] = selector[i];
+        }
       }
+
+      return this;
     },
     isReady: false,
     monolith: "0.0.1",
@@ -78,8 +89,8 @@ var Monolith = (function() {
       }
       return this;
     },
-    click: function() {
-      this.on('click', arguments[0]);
+    click: function(callback) {
+      this.on('click', callback);
       return this;
     },
     ready: function(fn) {
@@ -126,13 +137,45 @@ var Monolith = (function() {
   Monolith.fn.init.prototype = Monolith.fn;
 
   Monolith.extend = Monolith.fn.extend = function() {
-    var functionality = arguments[0];
-    if (typeof functionality === "object") {
-      for (var key in functionality) {
-        Monolith.prototype[key] = this[key] = functionality[key];
+    var target = arguments[0] || {},
+      i = 1,
+      deep = false;
+
+    if (typeof target === "boolean") {
+      i = 2;
+      deep = target;
+      target = arguments[1] || {};
+    }
+
+    if (arguments.length === 1) {
+      target = this;
+      i--;
+    }
+
+    for (; i < arguments.length; i++) {
+      var obj = arguments[i];
+
+      if (!obj) {
+        continue;
+      }
+
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          if (deep && typeof obj[key] === 'object') {
+            target[key] = Monolith.extend(target[key], obj[key]);
+          } else {
+            if (target == this) {
+              // for some reason I cannot remove this function
+              // please fix!
+              Monolith.fn[key] = obj[key];
+            }
+            target[key] = obj[key];
+          }
+        }
       }
     }
-    return this;
+
+    return target;
   };
 
   return (window.$ = window.Monolith = Monolith);
@@ -213,6 +256,10 @@ Monolith.extend({
           callback.call(obj[key], key, obj[key]);
         }
       }
+    } else if (typeof obj === "function") {
+      for (key = 0; key < this.length; key++) {
+        obj.call(this[key], key, this[key]);
+      }
     } else {
       for (key = 0; key < obj.length; key++) {
         callback.call(obj[key], key, obj[key]);
@@ -231,6 +278,37 @@ Monolith.extend({
       }
     } else {
       return this[0].getAttribute(arguments[0]);
+    }
+
+    return this;
+  },
+  data: function(elem, name, val) {
+    var i,
+      selector;
+    if (arguments.length === 3) {
+      selector = $(elem);
+      if (typeof val === "undefined") {
+        return JSON.parse(selector[0].getAttribute(name));
+      } else {
+        for (i = 0; i < this.length; i++) {
+          selector[0].setAttribute(name, JSON.stringify(val));
+        }
+      }
+    } else {
+      if (typeof elem.nodeType !== "undefined") {
+        selector = $(elem);
+        return JSON.parse(selector[0].getAttribute(name));
+      } else {
+        val = name;
+        name = elem;
+        if (typeof val === "undefined") {
+          JSON.parse(this[0].getAttribute(name));
+        } else {
+          for (i = 0; i < this.length; i++) {
+            this[i].setAttribute(name, JSON.stringify(val));
+          }
+        }
+      }
     }
 
     return this;
@@ -307,7 +385,7 @@ Monolith.extend({
           arguments[0].call(this, i, this[i].innerHTML);
         }
       } else {
-        for(i = 0; i < this.length; i++) {
+        for (i = 0; i < this.length; i++) {
           this[i].innerHTML = arguments[0];
         }
       }
@@ -316,17 +394,28 @@ Monolith.extend({
 });
 
 Monolith.extend({
-  curCSS: getComputedStyle || currentStyle,
+  curCSS: function(arg) {
+    // to fix Illegal invocation
+    return window.getComputedStyle(arg) || window.currentStyle(arg);
+  },
   css: function(prop, value) {
-    if (typeof value === "undefined") {
+    var i;
+
+    if (typeof prop === "object" && typeof value === "undefined") {
+      for (var key in prop) {
+        for (i = 0; i < this.length; i++) {
+          this[i].style[key] = prop[key];
+        }
+      }
+    } else if (typeof value === "undefined") {
       if (prop === "opacity") {
-        var currentVal = this.curCSS(this[0], prop);
+        var currentVal = this.curCSS(this[0])[prop];
         return ((currentVal == "") ? 1 : currentVal);
       } else {
-        return this.curCSS(this[0], prop);
+        return this.curCSS(this[0])[prop];
       }
     } else {
-      for (var i = 0; i < this.length; i++) {
+      for (i = 0; i < this.length; i++) {
         this[i].style[prop] = value;
       }
     }
@@ -334,10 +423,20 @@ Monolith.extend({
     return this;
   },
   width: function(val) {
-    this.css('width', val);
+    if (typeof val === "undefined") {
+      if (this[0].offsetWidth !== 0) {
+        return this[0].offsetWidth;
+      }
+    } else if (typeof val === "number") {
+      return this.css('width', val + "px");
+    } else {
+      return this.css('width', val);
+    }
+
+
   },
   height: function(val) {
-    this.css('height', val);
+    return this.css('height', val);
   }
 });
 
@@ -356,8 +455,15 @@ $.each({
     } else if (typeof elem.monolith === "string") {
       for (i = 0; i < this.length; i++) {
         for (var j = 0; j < elem.length; j++) {
+          if (elem[j].nodeName.toLowerCase() == "script") {
+            elem[j] = Monolith.rebuild(elem[j]);
+          }
           this[i].insertAdjacentElement(value, elem[j]);
         }
+      }
+    } else if (typeof elem.nodeType !== "undefined") {
+      for (i = 0; i < this.length; i++) {
+        this[i].insertAdjacentElement(value, elem);
       }
     }
 
@@ -376,6 +482,24 @@ $.each({
 
     return this;
   };
+});
+
+Monolith.extend({
+  rebuild: function(elem) {
+    var newElem = document.createElement(elem.nodeName);
+
+    if (elem.hasAttributes()) {
+      for (var i = 0; i < elem.attributes.length; i++) {
+        newElem.setAttribute(elem.attributes[i].name, elem.attributes[i].value);
+      }
+    }
+    var newText = newElem.textContent || newElem.innerText,
+      oldText = elem.textContent || elem.innerText;
+    newText = oldText;
+
+    return newElem;
+
+  }
 });
 
 Monolith.extend({
@@ -409,7 +533,8 @@ Monolith.extend({
 
       tick(this[i], state);
     }
-
+    
+    return this;
   }
 });
 

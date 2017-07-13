@@ -29,6 +29,7 @@ Monolith.extend({
 
       tick(this[i], state);
     }
-
+    
+    return this;
   }
 });

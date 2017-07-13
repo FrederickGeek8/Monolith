@@ -13,8 +13,15 @@ $.each({
     } else if (typeof elem.monolith === "string") {
       for (i = 0; i < this.length; i++) {
         for (var j = 0; j < elem.length; j++) {
+          if (elem[j].nodeName.toLowerCase() == "script") {
+            elem[j] = Monolith.rebuild(elem[j]);
+          }
           this[i].insertAdjacentElement(value, elem[j]);
         }
+      }
+    } else if (typeof elem.nodeType !== "undefined") {
+      for (i = 0; i < this.length; i++) {
+        this[i].insertAdjacentElement(value, elem);
       }
     }
 
@@ -33,4 +40,22 @@ $.each({
 
     return this;
   };
+});
+
+Monolith.extend({
+  rebuild: function(elem) {
+    var newElem = document.createElement(elem.nodeName);
+
+    if (elem.hasAttributes()) {
+      for (var i = 0; i < elem.attributes.length; i++) {
+        newElem.setAttribute(elem.attributes[i].name, elem.attributes[i].value);
+      }
+    }
+    var newText = newElem.textContent || newElem.innerText,
+      oldText = elem.textContent || elem.innerText;
+    newText = oldText;
+
+    return newElem;
+
+  }
 });
