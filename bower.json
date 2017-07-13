@@ -1,5 +1,5 @@
 {
-  "name": "Monolith",
+  "name": "monolith",
   "description": "A Homebrewed jQuery alternative",
   "main": "dist/monolith.js",
   "authors": [
