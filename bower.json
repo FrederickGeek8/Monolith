@@ -1,0 +1,24 @@
+{
+  "name": "Monolith",
+  "description": "A Homebrewed jQuery alternative",
+  "main": "dist/monolith.js",
+  "authors": [
+    "Frederick Morlock"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "jquery",
+    "selector",
+    "html",
+    "dom",
+    "css"
+  ],
+  "homepage": "https://github.com/FrederickGeek8/Monolith",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

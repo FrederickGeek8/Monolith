@@ -18,7 +18,7 @@
     "css"
   ],
   "author": "Frederick Morlock",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-contrib-concat": "^1.0.1",
