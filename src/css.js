@@ -29,18 +29,20 @@ Monolith.extend({
   },
   width: function(val) {
     if (typeof val === "undefined") {
-      if (this[0].offsetWidth !== 0) {
-        return this[0].offsetWidth;
-      }
+      return parseFloat(this.css('width'));
     } else if (typeof val === "number") {
       return this.css('width', val + "px");
     } else {
       return this.css('width', val);
     }
-
-
   },
   height: function(val) {
-    return this.css('height', val);
+    if (typeof val === "undefined") {
+      return parseFloat(this.css('height'));
+    } else if (typeof val === "number") {
+      return this.css('height', val + "px");
+    } else {
+      return this.css('height', val);
+    }
   }
 });
