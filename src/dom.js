@@ -21,7 +21,12 @@ $.each({
       }
     } else if (typeof elem.nodeType !== "undefined") {
       for (i = 0; i < this.length; i++) {
-        this[i].insertAdjacentElement(value, elem);
+        if (elem.nodeType === 3) {
+          // This is hacky but it is assumed that you run .empty beforehand
+          this[i].appendChild(elem);
+        } else {
+          this[i].insertAdjacentElement(value, elem);
+        }
       }
     }
 
@@ -57,5 +62,34 @@ Monolith.extend({
 
     return newElem;
 
+  },
+  empty: function() {
+    for (var i = 0; i < this.length; i++) {
+      while (this[i].firstChild) {
+        this[i].removeChild(this[i].firstChild);
+      }
+    }
+
+    return this;
+  },
+  getText: function(node) {
+    var ret = "";
+
+    for (var i = 0; i < node.length; i++) {
+      if (node[i].nodeType === 3 || node[i].nodeType === 4) {
+        ret += node[i].nodeValue;
+      } else if (node[i].nodeType !== 8) {
+        ret += this.getText(node[i].childNodes);
+      }
+    }
+
+    return ret;
+  },
+  text: function(text) {
+    if (text !== undefined) {
+      this.empty().append(document.createTextNode(text));
+    }
+
+    return this.getText(this);
   }
 });

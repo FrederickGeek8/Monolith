@@ -394,9 +394,32 @@ Monolith.extend({
 });
 
 Monolith.extend({
-  curCSS: function(arg) {
-    // to fix Illegal invocation
-    return window.getComputedStyle(arg) || window.currentStyle(arg);
+  curCSS: function(elem, prop) {
+    // TODO: Fix illegal invocation
+    // http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
+    if (document.documentElement.currentStyle) {
+      var ret = elem.currentStyle && elem.currentStyle[prop],
+        testpx = /^-?\d+(?:px)?$/i,
+        testnum = /^-?\d/;
+
+      if (!testpx.test(ret) && testnum.test(ret)) {
+        var left = elem.style.left,
+          runtimeLeft = elem.runtimeStyle;
+
+        // Feed in new values to be computed
+        elem.runtimeStyle.left = elem.currentStyle;
+        elem.style.left = ret || 0;
+        ret = style.pixelLeft + "px";
+
+        // Aand revert
+        elem.style.left = left;
+  			elem.runtimeStyle.left = runtimeLeft;
+      }
+
+      return ret === "" ? "auto" : ret;
+    }
+
+    return window.getComputedStyle(elem)[prop];
   },
   css: function(prop, value) {
     var i;
@@ -409,10 +432,10 @@ Monolith.extend({
       }
     } else if (typeof value === "undefined") {
       if (prop === "opacity") {
-        var currentVal = this.curCSS(this[0])[prop];
+        var currentVal = this.curCSS(this[0], prop);
         return ((currentVal == "") ? 1 : currentVal);
       } else {
-        return this.curCSS(this[0])[prop];
+        return this.curCSS(this[0], prop);
       }
     } else {
       for (i = 0; i < this.length; i++) {
@@ -465,7 +488,12 @@ $.each({
       }
     } else if (typeof elem.nodeType !== "undefined") {
       for (i = 0; i < this.length; i++) {
-        this[i].insertAdjacentElement(value, elem);
+        if (elem.nodeType === 3) {
+          // This is hacky but it is assumed that you run .empty beforehand
+          this[i].appendChild(elem);
+        } else {
+          this[i].insertAdjacentElement(value, elem);
+        }
       }
     }
 
@@ -501,6 +529,35 @@ Monolith.extend({
 
     return newElem;
 
+  },
+  empty: function() {
+    for (var i = 0; i < this.length; i++) {
+      while (this[i].firstChild) {
+        this[i].removeChild(this[i].firstChild);
+      }
+    }
+
+    return this;
+  },
+  getText: function(node) {
+    var ret = "";
+
+    for (var i = 0; i < node.length; i++) {
+      if (node[i].nodeType === 3 || node[i].nodeType === 4) {
+        ret += node[i].nodeValue;
+      } else if (node[i].nodeType !== 8) {
+        ret += this.getText(node[i].childNodes);
+      }
+    }
+
+    return ret;
+  },
+  text: function(text) {
+    if (text !== undefined) {
+      this.empty().append(document.createTextNode(text));
+    }
+
+    return this.getText(this);
   }
 });
 
